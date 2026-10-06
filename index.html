@@ -1,371 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Township 1 — Verified household services</title>
-    <meta name="description" content="Township 1 verified household services working prototype." />
-    <style>
-      :root {
-        --bg: #f3efe9;
-        --panel: #ffffff;
-        --paper: #f8f6f2;
-        --ink: #1a1d1f;
-        --muted: #585d61;
-        --line: #d8d1c5;
-        --primary: #163b3c;
-        --primary-soft: #ebf5f4;
-        --green: #2d6b46;
-        --gold: #b0843d;
-        --shadow: rgba(18, 22, 25, 0.08);
-      }
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Township 1 — MVP prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#142433; --slate:#44596C; --rule:#D4D8D2;
+    --paper:#EFF1EE; --card:#FFFFFF; --stamp:#A8372C; --green:#0E6B50;
+    --chat-bg:#E5E3DB; --bubble-in:#FFFFFF; --bubble-out:#D8EDE2;
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#E9EDF0; --slate:#A9B8C4; --rule:#36424C;
+      --paper:#101820; --card:#17222C; --chat-bg:#131C23; --bubble-in:#1D2932; --bubble-out:#17382C;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#E9EDF0; --slate:#A9B8C4; --rule:#36424C;
+    --paper:#101820; --card:#17222C; --chat-bg:#131C23; --bubble-in:#1D2932; --bubble-out:#17382C;
+  }
+  *,*::before,*::after{box-sizing:inherit}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:Archivo,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 56px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+  h1{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px}
+  .sub{color:var(--slate);font-size:14px;margin:0;max-width:68ch}
+  nav{display:flex;gap:6px;flex-wrap:wrap;margin:22px 0 26px}
+  nav button{font:inherit;font-weight:500;cursor:pointer;background:transparent;color:var(--slate);
+    border:1px solid var(--rule);border-radius:2px;padding:8px 14px}
+  nav button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  nav button:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+  section[hidden]{display:none}
+  .lede{max-width:70ch;color:var(--slate);margin:0 0 22px}
+  .grid{display:grid;gap:26px;grid-template-columns:minmax(300px,420px) 1fr;align-items:start}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
 
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background: var(--bg);
-        color: var(--ink);
-        line-height: 1.6;
-      }
+  /* ---- worker record, built like a work card ---- */
+  .record{background:var(--card);border:1px solid var(--rule);border-top:6px solid var(--ink);
+    padding:22px;position:relative}
+  .record .issuer{font-size:12.5px;color:var(--slate);letter-spacing:.04em;margin:0 0 14px}
+  .who{display:flex;gap:14px;align-items:flex-start}
+  .portrait{width:68px;height:68px;border-radius:50%;background:#C9D2CB;flex:none;
+    display:grid;place-items:center;font-size:24px;font-weight:600;color:#3C5346}
+  .who h2{margin:0;font-size:21px;font-weight:600;letter-spacing:-.01em}
+  .who p{margin:3px 0 0;color:var(--slate);font-size:14px}
+  .stamp{position:absolute;top:18px;right:18px;border:2px solid var(--stamp);color:var(--stamp);
+    border-radius:3px;padding:5px 9px;transform:rotate(-6deg);font-size:12px;font-weight:700;
+    line-height:1.2;text-align:center}
+  .stamp span{display:block;font-weight:500;font-size:10.5px}
+  dl{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;margin:20px 0 0;font-size:14px}
+  dt{color:var(--slate)}
+  dd{margin:0}
+  .checks{list-style:none;margin:18px 0 0;padding:14px 0 0;border-top:1px solid var(--rule)}
+  .checks li{display:flex;gap:9px;padding:4px 0;font-size:14px}
+  .tick{color:var(--green);font-weight:700}
+  .work{margin-top:18px;border-top:1px solid var(--rule);padding-top:14px}
+  .work h3{font-size:14px;margin:0 0 10px;font-weight:600}
+  .jobs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .job{aspect-ratio:4/3;background:#DDE2DC;border:1px solid var(--rule);display:grid;place-items:center;
+    text-align:center;font-size:11.5px;color:#4B5A4E;padding:6px}
+  .earn,.policy{margin-top:18px;border-top:1px solid var(--rule);padding-top:14px}
+  .earn strong,.policy strong{display:block;font-size:14px;margin-bottom:5px}
+  .earn p,.policy p{margin:0;font-size:13.5px;color:var(--slate)}
+  .prov{display:block;font-weight:400;font-size:11.5px;color:var(--slate);margin-top:2px}
+  .rating{margin-top:16px;display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--rule);padding-top:14px}
+  .rating strong{font-size:24px;font-weight:700}
+  .rating span{color:var(--slate);font-size:13.5px}
+  .cta{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap}
+  .btn{font:inherit;font-weight:600;border:0;border-radius:2px;padding:11px 18px;cursor:pointer;
+    background:var(--green);color:#fff}
+  .btn.secondary{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+  .btn:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
 
-      .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 32px 18px 80px;
-      }
+  /* ---- chat ---- */
+  .phone{background:var(--chat-bg);border:1px solid var(--rule);padding:16px;max-width:420px}
+  .phonebar{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--rule);
+    padding-bottom:10px;margin-bottom:14px}
+  .phonebar .dot{width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;
+    display:grid;place-items:center;font-size:13px;font-weight:600}
+  .phonebar b{font-size:14.5px;font-weight:600}
+  .phonebar em{display:block;font-style:normal;font-size:12px;color:var(--slate)}
+  .msg{max-width:84%;padding:9px 12px;border-radius:9px;margin-bottom:9px;font-size:14px;
+    background:var(--bubble-in);border:1px solid var(--rule)}
+  .msg.out{margin-left:auto;background:var(--bubble-out)}
+  .msg small{display:block;color:var(--slate);font-size:11px;margin-top:4px}
+  .msg .mini{margin-top:8px;padding-top:8px;border-top:1px solid var(--rule);font-size:13px}
+  .note{font-size:13.5px;color:var(--slate);max-width:60ch}
 
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        box-shadow: 0 12px 28px var(--shadow);
-      }
+  /* ---- tables ---- */
+  table{border-collapse:collapse;width:100%;font-size:13.5px;background:var(--card)}
+  caption{text-align:left;font-size:13px;color:var(--slate);padding-bottom:8px}
+  th,td{border:1px solid var(--rule);padding:8px 10px;text-align:left;vertical-align:top}
+  th{font-weight:600;background:rgba(20,36,51,.05)}
+  .scroll{overflow-x:auto}
+  .state{display:inline-block;padding:2px 7px;border:1px solid currentColor;border-radius:2px;font-size:11.5px;font-weight:600}
+  .s-held{color:var(--stamp)} .s-done{color:var(--green)} .s-open{color:var(--slate)}
+  h3.block{font-size:16px;margin:30px 0 10px;font-weight:600}
+  footer{margin-top:44px;border-top:1px solid var(--rule);padding-top:14px;color:var(--slate);font-size:13px;max-width:72ch}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Verified household services — working prototype</h1>
+  <p class="sub">Township 1 · ED 444 enterprise deliverable. Three screens a household, a worker and the coordinator actually see. Sample data; no real people are shown.</p>
+</header>
 
-      .header {
-        background: var(--primary);
-        color: #fff;
-        padding: 18px 24px;
-        border-radius: 16px 16px 0 0;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-      }
+<nav role="tablist" aria-label="Prototype screens">
+  <button role="tab" aria-selected="true" aria-controls="p-profile" id="t-profile">Worker record</button>
+  <button role="tab" aria-selected="false" aria-controls="p-book" id="t-book">Booking on WhatsApp</button>
+  <button role="tab" aria-selected="false" aria-controls="p-coord" id="t-coord">Coordinator view</button>
+</nav>
 
-      .content {
-        padding: 28px 26px 24px;
-      }
-
-      h1, h2, h3 {
-        margin: 0 0 12px;
-        line-height: 1.2;
-      }
-      h1 {
-        font-size: clamp(2rem, 4vw, 2.8rem);
-      }
-      h2 {
-        font-size: clamp(1.35rem, 2.5vw, 2rem);
-        margin-top: 26px;
-      }
-
-      p, li, td, th {
-        font-size: 1rem;
-      }
-
-      .pill {
-        display: inline-block;
-        background: #0d1f20;
-        color: white;
-        padding: 5px 12px;
-        border-radius: 999px;
-        font-size: 0.74rem;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        font-weight: 700;
-      }
-
-      .small { color: var(--muted); }
-
-      .meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px 22px;
-        padding: 14px 16px;
-        margin: 22px 0;
-        border-top: 1px solid var(--line);
-        border-bottom: 1px solid var(--line);
-        background: var(--paper);
-      }
-
-      .meta strong { color: var(--primary); }
-
-      .check-list {
-        list-style: none;
-        margin: 16px 0 0; padding: 0;
-      }
-
-      .check-list li {
-        position: relative;
-        padding-left: 28px;
-        margin-bottom: 10px;
-      }
-      .check-list li:before {
-        content: "✓";
-        position: absolute;
-        left: 0;
-        color: var(--green);
-        font-weight: 700;
-      }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 18px;
-        margin-top: 18px;
-      }
-
-      .tile {
-        background: var(--paper);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 18px;
-      }
-
-      .quote {
-        background: var(--primary-soft);
-        border-left: 4px solid var(--primary);
-        padding: 14px 16px;
-        margin: 18px 0;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 12px;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        overflow: hidden;
-      }
-      th, td {
-        padding: 12px 10px;
-        text-align: left;
-        border-bottom: 1px solid var(--line);
-        vertical-align: top;
-      }
-      th {
-        background: #efeae3;
-      }
-      tr:last-child td { border-bottom: none; }
-
-      .chat {
-        background: #f9f6f1;
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 16px;
-        margin-top: 16px;
-      }
-      .bubble {
-        max-width: 82%;
-        padding: 10px 12px;
-        border-radius: 12px;
-        margin: 8px 0;
-      }
-      .agent { background: #eaf3f3; }
-      .user { background: white; margin-left: auto; }
-
-      @media (max-width: 640px) {
-        .content { padding: 18px 16px 20px; }
-        .bubble { max-width: 100%; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="card">
-        <div class="header">Township 1 · ED 444 enterprise deliverable</div>
-
-        <div class="content">
-          <div class="pill">Verified household services</div>
-          <h1>Verified household services — working prototype</h1>
-          <p class="small">
-            Township 1 · ED 444 enterprise deliverable. Three screens a household, a worker and the coordinator actually see. Sample data; no real people are shown.
-          </p>
-
-          <div class="quote">
-            The household receives this link before it agrees to a booking. It is the whole product in one page: who the person is, what has been checked, what they have done before, and what other households said.
-          </div>
-
-          <div class="meta">
-            <div><strong>Work record</strong> · issued by Township 1</div>
-            <div><strong>Reference</strong> · TS1-0147</div>
-            <div><strong>Verified</strong> · 12 Sep 2026</div>
-            <div><strong>Person</strong> · NM</div>
-          </div>
-
+<!-- 1 -->
+<section id="p-profile" role="tabpanel" aria-labelledby="t-profile">
+  <p class="lede">The household receives this link before it agrees to a booking. It is the whole product in one page: who the person is, what has been checked, what they have done before, and what other households said.</p>
+  <div class="grid">
+    <article class="record">
+      <p class="issuer">Work record · issued by Township 1 · reference TS1-0147</p>
+      <div class="stamp">VERIFIED<span>9 Mar 2026</span></div>
+      <div class="who">
+        <div class="portrait" aria-hidden="true">NM</div>
+        <div>
           <h2>Nosipho M.</h2>
-          <p><strong>Cleaning · Gardening · Works in Stellenbosch and surrounds</strong></p>
-
-          <div class="grid">
-            <div class="tile">
-              <h3>Travels</h3>
-              <p>Up to 15 km · Stellenbosch, Idas Valley, Dalsig</p>
-            </div>
-            <div class="tile">
-              <h3>Jobs done</h3>
-              <p>23 through the platform</p>
-            </div>
-            <div class="tile">
-              <h3>Joined</h3>
-              <p>March 2026</p>
-            </div>
-            <div class="tile">
-              <h3>What Nosipho earns</h3>
-              <p>R270 of a R300 job. The platform takes 10% when the household confirms the job is done. Nothing is paid up front.</p>
-            </div>
-          </div>
-
-          <ul class="check-list">
-            <li><strong>Identity checked</strong> — South African ID matched to the person</li>
-            <li><strong>Skills observed</strong> — a coordinator watched a full clean before the first booking</li>
-            <li><strong>Two references called</strong> — previous households, contacted by phone</li>
-          </ul>
-
-          <h2>Previous work</h2>
-          <ul>
-            <li>Kitchen deep clean — Dalsig</li>
-            <li>Garden clear-up — Idas Valley</li>
-            <li>Move-out clean — Stellenbosch Central</li>
-          </ul>
-
-          <p><strong>If something goes wrong</strong></p>
-          <p>Cancel free up to 12 hours before. Report breakage or a problem within 24 hours and the payout is held while the coordinator resolves it — the job is redone or refunded. Coordinator Thandi, 07:00–19:00, replies within 30 minutes.</p>
-
-          <p><strong>4.8</strong> from 19 households · 0 disputes</p>
-
-          <h2>Why the page looks like this</h2>
-          <p>Five of six households surveyed named safety and trust as their main concern when hiring someone they do not know, and none named price. The page therefore leads with what has been checked and by whom, not with a price or a sales line.</p>
-          <p>Four of seven workers could not show a new client proof of past work. The record stays with the worker: the same link works whether the job comes through the platform or through a neighbour.</p>
-
-          <h2>Built to open on a weak connection</h2>
-          <p>Six of seven workers have mobile data only sometimes. The page is one file, under 50 kB, with no app to download, no login and no video. A household opens it from a WhatsApp message; a worker can send it themselves.</p>
-
-          <h2>What a household cannot see</h2>
-          <p>The worker's ID number, home address and phone number are held by the coordinator and never published. The page shows that a check happened, not the documents behind it.</p>
-          <p>Booking runs in WhatsApp because that is where both sides already are. A coordinator answers, so nothing has to be automated before the pilot proves people will book at all.</p>
-
-          <div class="chat">
-            <div class="bubble agent"><strong>T1</strong><br />Township 1 · online</div>
-            <div class="bubble user">Hi, I need someone to clean a 3-bedroom house this Saturday morning. Dalsig. 08:12</div>
-            <div class="bubble agent">Morning. A three-bedroom clean is R300, and there is a once-off R20 fee the first time you book a worker — nothing on later bookings with the same person. Saturday 9am works. Here are three verified workers near you. 08:14</div>
-            <div class="bubble agent">Nosipho M. · 4.8 from 19 households · 6 km away<br />Identity checked · Skills observed · 23 jobs done<br />View record → ts1.co.za/w/0147</div>
-            <div class="bubble user">Nosipho looks good. Saturday 9am. 08:21</div>
-            <div class="bubble agent">Booked — R320 as quoted. Payment is by Payfast, the same provider used by most South African online stores.<br />Pay here → ts1.co.za/pay/8842<br />We hold the money until you confirm the job is done. Cancel free up to 12 hours before and you are refunded in full.</div>
-            <div class="bubble user">Paid. 08:26</div>
-            <div class="bubble agent">Received and held. Nosipho will arrive Saturday at 9am. 08:26</div>
-            <div class="bubble agent">Saturday 13:40 — Nosipho has marked the job finished. Is everything done? 13:40</div>
-            <div class="bubble user">Yes, all good. 13:52</div>
-            <div class="bubble agent">Paid out to Nosipho. How was it, 1 to 5? You can add a comment for other households. 13:52</div>
-            <div class="bubble user">5 — arrived early, did the oven without being asked. 13:55</div>
-          </div>
-
-          <h2>What each step is testing</h2>
-          <table>
-            <thead>
-              <tr><th>Step</th><th>Assumption under test</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Three records sent, household picks</td><td>A verified record is enough to let a stranger into the house</td></tr>
-              <tr><td>Price quoted before booking</td><td>Households want a fixed price, not a bid</td></tr>
-              <tr><td>R20 charged only on a first booking</td><td>Half the households said they would not pay a booking fee</td></tr>
-              <tr><td>Money held, released on confirmation</td><td>Guaranteed payment was the feature workers rated most useful</td></tr>
-              <tr><td>Rating requested at the end</td><td>Households will rate without being chased</td></tr>
-            </tbody>
-          </table>
-
-          <h2>Deliberately not built yet</h2>
-          <p>No app, no automated matching, no in-platform wallet, no worker-facing dashboard. A coordinator does the matching by hand and uses a payment link. If households do not book, none of that software would have been worth writing.</p>
-          <p>One spreadsheet and one checklist run the whole pilot. This is what the coordinator works from, and it is also where the pilot's evidence comes from.</p>
-
-          <h2>Job log</h2>
-          <p class="small">Sample entries. Platform keeps = 10% commission, plus the R20 fee on a first booking, less Instant EFT processing at 2%. Money held means the household has paid and the worker has not yet been paid.</p>
-          <table>
-            <thead>
-              <tr><th>Job</th><th>Household</th><th>Worker</th><th>Service</th><th>Price</th><th>Platform keeps</th><th>State</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>8840</td><td>Idas Valley</td><td>Nosipho M.</td><td>Half-day clean, rebooking</td><td>R200</td><td>R16.00</td><td>Paid out</td></tr>
-              <tr><td>8841</td><td>Dalsig</td><td>Sibusiso K.</td><td>Garden clear-up, first booking</td><td>R350</td><td>R47.60</td><td>Paid out</td></tr>
-              <tr><td>8842</td><td>Dalsig</td><td>Nosipho M.</td><td>Three-bedroom clean, first booking</td><td>R300</td><td>R43.60</td><td>Money held</td></tr>
-              <tr><td>8843</td><td>Stellenbosch Central</td><td>Unassigned</td><td>Handyman</td><td>R200</td><td>—</td><td>Finding a worker</td></tr>
-            </tbody>
-          </table>
-
-          <h2>Worker onboarding checklist</h2>
-          <p>A worker is not listed until every row is complete. Verification is the product, so it is the one step that cannot be skipped to save time.</p>
-          <table>
-            <thead>
-              <tr><th>Step</th><th>Done by</th><th>Evidence kept</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Identity confirmed against South African ID</td><td>Coordinator, in person</td><td>Check logged; document not stored</td></tr>
-              <tr><td>Skills watched on a real job</td><td>Coordinator</td><td>Short note and photographs</td></tr>
-              <tr><td>Two references phoned</td><td>Coordinator</td><td>Names and dates of the calls</td></tr>
-              <tr><td>Bank or eWallet details captured for payout</td><td>Coordinator</td><td>Payment provider record</td></tr>
-              <tr><td>Take-home pay worked through on an example job</td><td>Coordinator</td><td>Worker confirms the R270 on a R300 job</td></tr>
-              <tr><td>Commission and payment timing explained</td><td>Coordinator</td><td>Worker confirms on WhatsApp</td></tr>
-              <tr><td>Worker approves their own record page before it is published</td><td>Worker</td><td>Written approval on WhatsApp</td></tr>
-              <tr><td>Record page published</td><td>Coordinator</td><td>Link sent to the worker</td></tr>
-            </tbody>
-          </table>
-
-          <h2>Rules the coordinator works to</h2>
-          <p>Written before the pilot so the same answer is given every time.</p>
-          <table>
-            <thead>
-              <tr><th>Situation</th><th>Rule</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Household does not confirm the job</td><td>Coordinator calls after 24 hours. Payment is released after 72 hours unless a problem is reported.</td></tr>
-              <tr><td>Household reports poor work</td><td>Payout held. The worker returns to finish, or the household is refunded. Decided within 48 hours.</td></tr>
-              <tr><td>Breakage or damage</td><td>Reported within 24 hours. Payout held while the coordinator resolves it with both sides.</td></tr>
-              <tr><td>Cancellation</td><td>Free up to 12 hours before. Inside 12 hours the worker is paid R100 for the reserved time.</td></tr>
-              <tr><td>Worker does not arrive</td><td>Full refund the same day, and a replacement worker offered.</td></tr>
-              <tr><td>Supplies and equipment</td><td>The household provides cleaning supplies unless agreed otherwise; the coordinator states this when quoting.</td></tr>
-            </tbody>
-          </table>
-
-          <h2>What the pilot has to show</h2>
-          <table>
-            <thead>
-              <tr><th>Measure</th><th>Target over three months</th><th>Read from</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Completed jobs</td><td>100</td><td>Job log</td></tr>
-              <tr><td>Households booking a second time</td><td>30%</td><td>Job log, repeat households</td></tr>
-              <tr><td>Disputes</td><td>Under 5% of jobs</td><td>Job log, dispute column</td></tr>
-              <tr><td>Average rating</td><td>4 out of 5 or better</td><td>Ratings collected on WhatsApp</td></tr>
-              <tr><td>Coordinator minutes per job</td><td>Recorded, not targeted</td><td>Job log, time stamps</td></tr>
-            </tbody>
-          </table>
-
-          <div class="quote">
-            Prototype for the ED 444 enterprise deliverable. Names, ratings and job records are illustrative. Links shown in the booking thread are not live.
-          </div>
+          <p>Cleaning · Gardening · Works in Stellenbosch and surrounds</p>
         </div>
       </div>
+      <dl>
+        <dt>Travels</dt><dd>Up to 15 km · Stellenbosch, Idas Valley, Dalsig</dd>
+        <dt>Jobs done</dt><dd>23 through the platform</dd>
+        <dt>Joined</dt><dd>March 2026</dd>
+      </dl>
+      <div class="earn">
+        <strong>What Nosipho earns</strong>
+        <p>R270 of a R300 job. The platform takes 10% when the household confirms the job is done. Nothing is paid up front. Payout by bank transfer or eWallet, within one working day.</p>
+      </div>
+      <ul class="checks">
+        <li><span class="tick" aria-hidden="true">✓</span><span><strong>Identity checked</strong> — South African ID matched to the person</span></li>
+        <li><span class="tick" aria-hidden="true">✓</span><span><strong>Skills observed</strong> — a coordinator watched a full clean before the first booking</span></li>
+        <li><span class="tick" aria-hidden="true">✓</span><span><strong>Two references called</strong> — previous households, contacted by phone</span></li>
+      </ul>
+      <div class="work">
+        <h3>Previous work <span class="prov">photographs supplied by the worker, job locations confirmed by the coordinator</span></h3>
+        <div class="jobs">
+          <div class="job">Kitchen deep clean<br>Dalsig</div>
+          <div class="job">Garden clear-up<br>Idas Valley</div>
+          <div class="job">Move-out clean<br>Stellenbosch Central</div>
+        </div>
+      </div>
+      <div class="policy">
+        <strong>If something goes wrong</strong>
+        <p>Cancel free up to 12 hours before. Report breakage or a problem within 24 hours and the payout is held while the coordinator resolves it — the job is redone or refunded. Coordinator Thandi, 07:00–19:00, replies within 30 minutes.</p>
+      </div>
+      <div class="rating">
+        <strong>4.8</strong><span>from 19 households · 0 disputes</span>
+      </div>
+      <div class="cta">
+        <button class="btn">Request Nosipho</button>
+        <button class="btn secondary">See other workers nearby</button>
+      </div>
+    </article>
+    <div>
+      <h3 class="block">Why the page looks like this</h3>
+      <p class="note">Five of six households surveyed named safety and trust as their main concern when hiring someone they do not know, and none named price. The page therefore leads with what has been checked and by whom, not with a price or a sales line.</p>
+      <p class="note">Four of seven workers could not show a new client proof of past work. The record stays with the worker: the same link works whether the job comes through the platform or through a neighbour.</p>
+      <h3 class="block">Built to open on a weak connection</h3>
+      <p class="note">Six of seven workers have mobile data only sometimes. The page is one file, under 50 kB, with no app to download, no login and no video. A household opens it from a WhatsApp message; a worker can send it themselves.</p>
+      <h3 class="block">What a household cannot see</h3>
+      <p class="note">The worker's ID number, home address and phone number are held by the coordinator and never published. The page shows that a check happened, not the documents behind it.</p>
     </div>
-  </body>
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="p-book" role="tabpanel" aria-labelledby="t-book" hidden>
+  <p class="lede">Booking runs in WhatsApp because that is where both sides already are. A coordinator answers, so nothing has to be automated before the pilot proves people will book at all.</p>
+  <div class="grid">
+    <div class="phone">
+      <div class="phonebar"><div class="dot" aria-hidden="true">T1</div><div><b>Township 1</b><em>online</em></div></div>
+      <div class="msg out">Hi, I need someone to clean a 3-bedroom house this Saturday morning. Dalsig.<small>08:12</small></div>
+      <div class="msg">Morning. A three-bedroom clean is R300, and there is a once-off R20 fee the first time you book a worker — nothing on later bookings with the same person. Saturday 9am works. Here are three verified workers near you.<small>08:14</small></div>
+      <div class="msg">
+        Nosipho M. · 4.8 from 19 households · 6 km away
+        <div class="mini">Identity checked · Skills observed · 23 jobs done<br>View record → ts1.co.za/w/0147</div>
+        <small>08:14</small>
+      </div>
+      <div class="msg out">Nosipho looks good. Saturday 9am.<small>08:21</small></div>
+      <div class="msg">Booked — R320 as quoted. Payment is by Payfast, the same provider used by most South African online stores.<div class="mini">Pay here → ts1.co.za/pay/8842<br>We hold the money until you confirm the job is done. Cancel free up to 12 hours before and you are refunded in full.</div><small>08:22</small></div>
+      <div class="msg out">Paid.<small>08:26</small></div>
+      <div class="msg">Received and held. Nosipho will arrive Saturday at 9am.<small>08:26</small></div>
+      <div class="msg">Saturday 13:40 — Nosipho has marked the job finished. Is everything done?<small>13:40</small></div>
+      <div class="msg out">Yes, all good.<small>13:52</small></div>
+      <div class="msg">Paid out to Nosipho. How was it, 1 to 5? You can add a comment for other households.<small>13:52</small></div>
+      <div class="msg out">5 — arrived early, did the oven without being asked.<small>13:55</small></div>
+    </div>
+    <div>
+      <h3 class="block">What each step is testing</h3>
+      <div class="scroll">
+        <table>
+          <caption>Every message exists to answer one question the surveys raised.</caption>
+          <tr><th>Step</th><th>Assumption under test</th></tr>
+          <tr><td>Three records sent, household picks</td><td>A verified record is enough to let a stranger into the house</td></tr>
+          <tr><td>Price quoted before booking</td><td>Households want a fixed price, not a bid</td></tr>
+          <tr><td>R20 charged only on a first booking</td><td>Half the households said they would not pay a booking fee</td></tr>
+          <tr><td>Money held, released on confirmation</td><td>Guaranteed payment was the feature workers rated most useful</td></tr>
+          <tr><td>Rating requested at the end</td><td>Households will rate without being chased</td></tr>
+        </table>
+      </div>
+      <h3 class="block">Deliberately not built yet</h3>
+      <p class="note">No app, no automated matching, no in-platform wallet, no worker-facing dashboard. A coordinator does the matching by hand and uses a payment link. If households do not book, none of that software would have been worth writing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="p-coord" role="tabpanel" aria-labelledby="t-coord" hidden>
+  <p class="lede">One spreadsheet and one checklist run the whole pilot. This is what the coordinator works from, and it is also where the pilot's evidence comes from.</p>
+  <h3 class="block">Job log</h3>
+  <div class="scroll">
+    <table>
+      <caption>Sample entries. Platform keeps = 10% commission, plus the R20 fee on a first booking, less Instant EFT processing at 2%. Money held means the household has paid and the worker has not yet been paid.</caption>
+      <tr><th>Job</th><th>Household</th><th>Worker</th><th>Service</th><th>Price</th><th>Platform keeps</th><th>State</th></tr>
+      <tr><td>8840</td><td>Idas Valley</td><td>Nosipho M.</td><td>Half-day clean, rebooking</td><td>R200</td><td>R16.00</td><td><span class="state s-done">Paid out</span></td></tr>
+      <tr><td>8841</td><td>Dalsig</td><td>Sibusiso K.</td><td>Garden clear-up, first booking</td><td>R350</td><td>R47.60</td><td><span class="state s-done">Paid out</span></td></tr>
+      <tr><td>8842</td><td>Dalsig</td><td>Nosipho M.</td><td>Three-bedroom clean, first booking</td><td>R300</td><td>R43.60</td><td><span class="state s-held">Money held</span></td></tr>
+      <tr><td>8843</td><td>Stellenbosch Central</td><td>Unassigned</td><td>Handyman</td><td>R200</td><td>—</td><td><span class="state s-open">Finding a worker</span></td></tr>
+    </table>
+  </div>
+  <h3 class="block">Worker onboarding checklist</h3>
+  <div class="scroll">
+    <table>
+      <caption>A worker is not listed until every row is complete. Verification is the product, so it is the one step that cannot be skipped to save time.</caption>
+      <tr><th>Step</th><th>Done by</th><th>Evidence kept</th></tr>
+      <tr><td>Identity confirmed against South African ID</td><td>Coordinator, in person</td><td>Check logged; document not stored</td></tr>
+      <tr><td>Skills watched on a real job</td><td>Coordinator</td><td>Short note and photographs</td></tr>
+      <tr><td>Two references phoned</td><td>Coordinator</td><td>Names and dates of the calls</td></tr>
+      <tr><td>Bank or eWallet details captured for payout</td><td>Coordinator</td><td>Payment provider record</td></tr>
+      <tr><td>Take-home pay worked through on an example job</td><td>Coordinator</td><td>Worker confirms the R270 on a R300 job</td></tr>
+      <tr><td>Commission and payment timing explained</td><td>Coordinator</td><td>Worker confirms on WhatsApp</td></tr>
+      <tr><td>Worker approves their own record page before it is published</td><td>Worker</td><td>Written approval on WhatsApp</td></tr>
+      <tr><td>Record page published</td><td>Coordinator</td><td>Link sent to the worker</td></tr>
+    </table>
+  </div>
+  <h3 class="block">Rules the coordinator works to</h3>
+  <div class="scroll">
+    <table>
+      <caption>Written before the pilot so the same answer is given every time.</caption>
+      <tr><th>Situation</th><th>Rule</th></tr>
+      <tr><td>Household does not confirm the job</td><td>Coordinator calls after 24 hours. Payment is released after 72 hours unless a problem is reported.</td></tr>
+      <tr><td>Household reports poor work</td><td>Payout held. The worker returns to finish, or the household is refunded. Decided within 48 hours.</td></tr>
+      <tr><td>Breakage or damage</td><td>Reported within 24 hours. Payout held while the coordinator resolves it with both sides.</td></tr>
+      <tr><td>Cancellation</td><td>Free up to 12 hours before. Inside 12 hours the worker is paid R100 for the reserved time.</td></tr>
+      <tr><td>Worker does not arrive</td><td>Full refund the same day, and a replacement worker offered.</td></tr>
+      <tr><td>Supplies and equipment</td><td>The household provides cleaning supplies unless agreed otherwise; the coordinator states this when quoting.</td></tr>
+    </table>
+  </div>
+  <h3 class="block">What the pilot has to show</h3>
+  <div class="scroll">
+    <table>
+      <tr><th>Measure</th><th>Target over three months</th><th>Read from</th></tr>
+      <tr><td>Completed jobs</td><td>100</td><td>Job log</td></tr>
+      <tr><td>Households booking a second time</td><td>30%</td><td>Job log, repeat households</td></tr>
+      <tr><td>Disputes</td><td>Under 5% of jobs</td><td>Job log, dispute column</td></tr>
+      <tr><td>Average rating</td><td>4 out of 5 or better</td><td>Ratings collected on WhatsApp</td></tr>
+      <tr><td>Coordinator minutes per job</td><td>Recorded, not targeted</td><td>Job log, time stamps</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>Prototype for the ED 444 enterprise deliverable. Names, ratings and job records are illustrative. Links shown in the booking thread are not live.</footer>
+</div>
+<script>
+  const tabs=[...document.querySelectorAll('[role="tab"]')];
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(o=>{
+      const panel=document.getElementById(o.getAttribute('aria-controls'));
+      const on=o===t;
+      o.setAttribute('aria-selected',on?'true':'false');
+      panel.hidden=!on;
+    });
+    window.scrollTo({top:0,behavior:'instant'});
+  }));
+</script>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
